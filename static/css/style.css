@@ -1,0 +1,57 @@
+/* DARK MODE ENABLED */
+.dark-mode {
+    background-color: #121212 !important;
+    color: #e2e2e2 !important;
+}
+
+.dark-mode .card,
+.dark-mode .table,
+.dark-mode input,
+.dark-mode textarea,
+.dark-mode select {
+    background-color: #1e1e1e !important;
+    color: #e2e2e2 !important;
+    border-color: #333 !important;
+}
+
+.dark-mode .navbar {
+    background-color: #000 !important;
+}
+
+.dark-mode a {
+    color: #4ba3ff !important;
+}
+
+.badge-pending { background-color: #ffc107; color: #000; }
+.badge-approved { background-color: #0d6efd; }
+.badge-shipped { background-color: #0dcaf0; color: #000; }
+.badge-delivered { background-color: #198754; }
+.badge-cancelled { background-color: #dc3545; }
+
+
+.badge-pending {
+    background-color: #ffc107;
+    color: #000;
+}
+
+.badge-approved {
+    background-color: #0d6efd;
+    color: #fff;
+}
+
+.badge-shipped {
+    background-color: #0dcaf0;
+    color: #000;
+}
+
+.badge-delivered {
+    background-color: #198754;
+    color: #fff;
+}
+
+.badge-cancelled {
+    background-color: #dc3545;
+    color: #fff;
+}
+
+

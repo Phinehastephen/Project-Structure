@@ -1,0 +1,91 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<h2>Order Tracking</h2>
+
+<h4>Order #{{ order[0] }}</h4>
+<p>Total: ₦{{ order[1] }}</p>
+<p>Address: {{ order[3] }}</p>
+<p>Date: {{ order[4] }}</p>
+
+<hr>
+
+<h3>Status</h3>
+
+<div class="tracking">
+
+    <div class="step {% if order[2] in ['pending','approved','shipped','delivered'] %} completed {% endif %}">
+        <span>Order Placed</span>
+    </div>
+
+    <div class="step {% if order[2] in ['approved','shipped','delivered'] %} completed {% endif %}">
+        <span>Approved</span>
+    </div>
+
+    <div class="step {% if order[2] in ['shipped','delivered'] %} completed {% endif %}">
+        <span>Shipped</span>
+    </div>
+
+    <div class="step {% if order[2] == 'delivered' %} completed {% endif %}">
+        <span>Delivered</span>
+    </div>
+
+</div>
+
+<style>
+.tracking {
+    display: flex;
+    margin-top: 20px;
+}
+
+.step {
+    flex: 1;
+    text-align: center;
+    padding: 10px;
+    position: relative;
+    opacity: 0.4;
+}
+
+.step.completed {
+    opacity: 1;
+    font-weight: bold;
+    color: green;
+}
+
+.step::after {
+    content: "";
+    width: 100%;
+    height: 3px;
+    background: #ccc;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.step.completed::after {
+    background: green;
+}
+</style>
+
+<hr>
+
+<h3>Items in this Order</h3>
+
+<table class="table table-bordered">
+    <tr>
+        <th>Product</th>
+        <th>Qty</th>
+        <th>Price</th>
+    </tr>
+
+    {% for item in items %}
+    <tr>
+        <td>{{ item[0] }}</td>
+        <td>{{ item[1] }}</td>
+        <td>₦{{ item[2] }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+{% endblock %}

@@ -1,0 +1,10 @@
+{% macro product_image(filename, w=150, h=150) %}
+    <img src="{{ url_for('static', filename='uploads/' ~ (filename if filename else 'placeholder.png')) }}"
+         width="{{ w }}" height="{{ h }}"
+         style="object-fit:cover;"
+         class="img-fluid mb-2">
+{% endmacro %}
+
+{% from "components/product_image.html" import product_image %}
+
+{{ product_image(p[6]) }}

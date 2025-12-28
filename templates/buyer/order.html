@@ -1,0 +1,92 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<h2>Order Tracking — #{{ order[0] }}</h2>
+
+<div class="card p-3 mb-4">
+    <p><strong>Total Amount:</strong> ₦{{ order[1] }}</p>
+
+    <p><strong>Status:</strong>
+        {% if order[2] == "pending" %}
+            <span class="badge bg-warning text-dark">Pending</span>
+        {% elif order[2] == "approved" %}
+            <span class="badge bg-primary">Approved</span>
+        {% elif order[2] == "shipped" %}
+            <span class="badge bg-info text-dark">Shipped</span>
+        {% elif order[2] == "delivered" %}
+            <span class="badge bg-success">Delivered</span>
+        {% elif order[2] == "cancelled" %}
+            <span class="badge bg-danger">Cancelled</span>
+        {% endif %}
+    </p>
+
+    <p><strong>Shipping Address:</strong> {{ order[3] }}</p>
+    <p><strong>Date:</strong> {{ order[4] }}</p>
+</div>
+
+<!-- STATUS PROGRESS BAR -->
+<h4>Order Progress</h4>
+
+{% set progress = {
+    'pending': 25,
+    'approved': 50,
+    'shipped': 75,
+    'delivered': 100,
+    'cancelled': 0
+} %}
+
+<div class="progress mb-4" style="height: 30px;">
+    <div class="progress-bar 
+        {% if order[2] == 'cancelled' %}bg-danger
+        {% elif order[2] == 'pending' %}bg-warning text-dark
+        {% elif order[2] == 'approved' %}bg-primary
+        {% elif order[2] == 'shipped' %}bg-info text-dark
+        {% elif order[2] == 'delivered' %}bg-success
+        {% endif %}"
+        role="progressbar"
+        style="width: {{ progress[order[2]] }}%;">
+        {{ order[2] | capitalize }}
+    </div>
+</div>
+
+<h4>Items in this Order</h4>
+
+<table class="table table-bordered">
+    <tr>
+        <th>Product</th>
+        <th>Price (₦)</th>
+        <th>Qty</th>
+        <th>Total (₦)</th>
+    </tr>
+
+    {% for item in items %}
+    <tr>
+        <td>{{ item[0] }}</td>   <!-- product name -->
+        <td>{{ item[1] }}</td>   <!-- price -->
+        <td>{{ item[2] }}</td>   <!-- qty -->
+        <td>{{ item[1] * item[2] }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+
+<p><strong>Estimated Delivery:</strong>
+    {% if order[5] %}
+        {{ order[5] }}
+    {% else %}
+        Not set yet — order still processing
+    {% endif %}
+</p>
+
+
+<!-- CANCEL ORDER (Only if pending) -->
+{% if order[2] == "pending" %}
+<form method="POST" action="/buyer/order/cancel/{{ order[0] }}">
+    <button class="btn btn-danger mt-3"
+            onclick="return confirm('Are you sure you want to cancel this order?');">
+        Cancel Order
+    </button>
+</form>
+{% endif %}
+
+{% endblock %}

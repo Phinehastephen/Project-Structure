@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<div class="card p-4">
+    <h2>{{ product[2] }}</h2>
+
+    {% if product[5] %}
+        <img src="{{ url_for('static', filename='uploads/' ~ (product[6] if product[6] else 'placeholder.png')) }}"
+     class="img-fluid"
+     style="max-width:300px; object-fit:cover;">
+    {% endif %}
+
+    <p><strong>Price:</strong> ₦{{ product[4] }}</p>
+    <p><strong>Stock:</strong> {{ product[3] }}</p>
+    <p><strong>Description:</strong> {{ product[6] }}</p>
+
+    <a href="/buyer/add_to_cart/{{ product[0] }}" class="btn btn-primary">
+        Add to Cart
+    </a>
+</div>
+
+{% endblock %}

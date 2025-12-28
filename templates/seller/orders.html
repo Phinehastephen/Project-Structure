@@ -1,0 +1,81 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<h2>Orders For Your Products</h2>
+
+{% if orders|length == 0 %}
+    <div class="alert alert-info text-center mt-4">
+        No customer orders found.
+    </div>
+{% endif %}
+
+
+<table class="table table-bordered mt-3">
+    <tr>
+        <th>Order ID</th>
+        <th>Buyer ID</th>
+        <th>Total (₦)</th>
+        <th>Status</th>
+        <th>Date</th>
+        <th>Action</th>
+        <!-- <th>View</th> -->
+    </tr>
+
+    {% for o in orders %}
+    <tr>
+        <td>{{ o[0] }}</td>  <!-- order id -->
+        <td>{{ o[1] }}</td>  <!-- buyer id -->
+        <td>₦{{ o[2] }}</td> <!-- total amount -->
+        <td>
+            {% if o[3] == "pending" %}
+                <span class="badge bg-warning text-dark">Pending</span>
+            {% elif o[3] == "approved" %}
+                <span class="badge bg-primary">Approved</span>
+            {% elif o[3] == "shipped" %}
+                <span class="badge bg-info text-dark">Shipped</span>
+            {% elif o[3] == "delivered" %}
+                <span class="badge bg-success">Delivered</span>
+            {% elif o[3] == "cancelled" %}
+                <span class="badge bg-danger">Cancelled</span>
+            {% endif %}
+        </td>
+        <td>{{ o[4] }}</td>  <!-- created_at -->
+
+        <td>
+            {% if o[3] == "pending" %}
+                <form method="POST" action="/seller/orders/approve/{{ o[0] }}" class="d-inline">
+                    <button class="btn btn-warning btn-sm">Approve</button>
+                </form>
+
+            {% elif o[3] == "approved" %}
+                <form method="POST" action="/seller/orders/shipped/{{ o[0] }}" class="d-inline">
+                    <button class="btn btn-primary btn-sm">Mark Shipped</button>
+                </form>
+
+            {% elif o[3] == "shipped" %}
+                <form method="POST" action="/seller/orders/delivered/{{ o[0] }}" class="d-inline">
+                    <button class="btn btn-success btn-sm">Mark Delivered</button>
+                </form>
+
+            {% elif o[3] == "delivered" %}
+                <span class="text-success fw-bold">Delivered</span>
+
+            {% elif o[3] == "cancelled" %}
+                <span class="text-danger fw-bold">Cancelled</span>
+            {% endif %}
+
+            {% if o[3] not in ["delivered", "cancelled"] %}
+                <form method="POST" action="/seller/orders/cancel/{{ o[0] }}" class="d-inline">
+                    <button class="btn btn-danger btn-sm">Cancel</button>
+                </form>
+            {% endif %}
+        </td>
+
+        <!-- <td>
+            <a href="/seller/order/{{ o[0] }}" class="btn btn-info btn-sm">View</a>
+        </td> -->
+    </tr>
+    {% endfor %}
+</table>
+
+{% endblock %}

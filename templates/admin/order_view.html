@@ -1,0 +1,119 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<h2>Order Details — #{{ order[0] }}</h2>
+
+<!-- ====================== ORDER SUMMARY CARD ===================== -->
+<div class="card p-4 mb-4 shadow-sm">
+    <p><strong>Buyer:</strong> {{ order[5] }} ({{ order[6] }})</p>
+    <p><strong>Total Amount:</strong> ₦{{ order[1] }}</p>
+    <p><strong>Status:</strong> 
+        <span class="badge bg-primary">{{ order[2] | capitalize }}</span>
+    </p>
+    <p><strong>Shipping Address:</strong> {{ order[3] }}</p>
+    <p><strong>Order Date:</strong> {{ order[4] }}</p>
+</div>
+
+
+<!-- ====================== ORDER STATUS TIMELINE ===================== -->
+<h4 class="mb-3">Order Timeline</h4>
+
+{% set steps = ["pending", "approved", "shipped", "delivered"] %}
+{% set colors = {
+    "pending": "warning",
+    "approved": "primary",
+    "shipped": "info",
+    "delivered": "success"
+} %}
+
+
+{% if order[2] not in steps %}
+    {% set current_status = "pending" %}
+{% else %}
+    {% set current_status = order[2] %}
+{% endif %}
+
+<div class="timeline-container mb-5">
+    <div class="timeline-steps d-flex justify-content-between position-relative">
+
+        {% for s in steps %}
+            {% set done = steps.index(current_status) >= steps.index(s) %}
+
+            <div class="text-center" style="width: 25%;">
+                <div class="timeline-dot 
+                    {% if done %} bg-{{ colors[s] }} {% else %} bg-secondary {% endif %}">
+                </div>
+
+                <p class="mt-2 {% if done %} fw-bold {% endif %}">
+                    {{ s|capitalize }}
+                </p>
+            </div>
+
+        {% endfor %}
+
+    </div>
+</div>
+
+
+<style>
+.timeline-container {
+    padding: 10px 20px;
+}
+
+.timeline-steps::before {
+    content: "";
+    top: 22px;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    position: absolute;
+    background: #ddd;
+}
+
+.timeline-dot {
+    width: 25px;
+    height: 25px;
+    margin: auto;
+    border-radius: 50%;
+}
+</style>
+
+
+<!-- ====================== ORDER ITEMS TABLE ===================== -->
+<h4>Order Items</h4>
+
+<table class="table table-bordered mb-4">
+    <tr>
+        <th>Product</th>
+        <th>Price (₦)</th>
+        <th>Qty</th>
+        <th>Total</th>
+    </tr>
+
+    {% for item in items %}
+    <tr>
+        <td>{{ item[0] }}</td>
+        <td>{{ item[1] }}</td>
+        <td>{{ item[2] }}</td>
+        <td>{{ item[1] * item[2] }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+
+<!-- ====================== UPDATE STATUS FORM ===================== -->
+<h4>Update Status</h4>
+
+<form method="POST" action="/admin/orders/update/{{ order[0] }}" class="d-flex gap-3">
+    <select name="status" class="form-control w-25">
+        <option value="pending"   {% if order[2] == "pending" %}selected{% endif %}>Pending</option>
+        <option value="approved"  {% if order[2] == "approved" %}selected{% endif %}>Approved</option>
+        <option value="shipped"   {% if order[2] == "shipped" %}selected{% endif %}>Shipped</option>
+        <option value="delivered" {% if order[2] == "delivered" %}selected{% endif %}>Delivered</option>
+        <option value="cancelled" {% if order[2] == "cancelled" %}selected{% endif %}>Cancelled</option>
+    </select>
+
+    <button class="btn btn-primary">Update</button>
+</form>
+
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<h2>Seller Dashboard</h2>
+
+<div class="row mt-3">
+    <div class="col-md-4">
+        <div class="dashboard-card text-center">
+            <h3>{{ total_products }}</h3>
+            <p>Total Products</p>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="dashboard-card text-center">
+            <h3>{{ total_orders }}</h3>
+            <p>Total Orders</p>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+
+<!-- Load Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<h3 class="mt-4">Monthly Sales Overview</h3>
+<canvas id="salesChart" style="max-height: 300px;"></canvas>
+
+<script>
+fetch("/seller/sales-data")
+    .then(response => response.json())
+    .then(data => {
+        new Chart(document.getElementById("salesChart"), {
+            type: "line",
+            data: {
+                labels: data.months.map(m => "Month " + m),
+                datasets: [{
+                    label: "Sales (₦)",
+                    data: data.totals,
+                    borderWidth: 2,
+                    fill: false
+                }]
+            }
+        });
+    });
+</script>
+
+<!-- Notifications Section -->
+{% if notifications %}
+<div class="alert alert-info">
+    <h5>New Notifications</h5>
+    <ul>
+        {% for n in notifications %}
+            <li>{{ n[0] }} ({{ n[1] }})</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}

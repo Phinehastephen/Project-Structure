@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<h2>Your Products</h2>
+
+<a href="/seller/add-product" class="btn btn-primary my-3">+ Add Product</a>
+
+<table class="table table-bordered">
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Price (₦)</th>
+        <th>Stock</th>
+        <th>Action</th>
+    </tr>
+
+    {% for p in products %}
+    <tr>
+        <td>{{ p[0] }}</td>
+        <td>{{ p[2] }}</td>
+        <td>{{ p[4] }}</td>
+        <td>{{ p[5] }}</td>
+        <td>
+            <a href="/seller/edit-product/{{ p[0] }}" class="btn btn-sm btn-warning">Edit</a>
+            <a href="/seller/delete-product/{{ p[0] }}" class="btn btn-sm btn-danger">Delete</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+{% endblock %}

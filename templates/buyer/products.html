@@ -1,0 +1,65 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<!-- SEARCH BAR -->
+<form method="GET" action="/buyer/products" class="mb-3">
+    <input type="text" name="search" value="{{ search }}"
+           class="form-control form-control-lg"
+           placeholder="Search products...">
+</form>
+
+<h2 class="mt-3">Available Products</h2>
+
+<!-- EMPTY STATE -->
+{% if products|length == 0 %}
+    <div class="alert alert-info text-center mt-4">
+        No products available yet.
+    </div>
+{% endif %}
+
+<!-- RESPONSIVE PRODUCT GRID -->
+<div class="row g-3 mt-2">
+
+    {% for p in products %}
+    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+        <div class="card shadow-sm h-100 border-0">
+
+            <!-- PRODUCT IMAGE -->
+            <img src="{{ url_for('static', filename='uploads/' ~ (p[6] if p[6] else 'placeholder.png')) }}"
+                 class="card-img-top img-fluid"
+                 style="height: 180px; object-fit: cover; border-radius: 6px 6px 0 0;">
+
+            <div class="card-body d-flex flex-column">
+
+                <!-- PRODUCT NAME -->
+                <h5 class="card-title">{{ p[2] }}</h5>
+
+                <!-- DESCRIPTION -->
+                <p class="text-muted" style="font-size: 14px;">
+                    {{ p[3][:80] }}{% if p[3]|length > 80 %}...{% endif %}
+                </p>
+
+                <!-- PRICE -->
+                <p class="fw-bold fs-5 mt-auto">₦{{ p[4] }}</p>
+
+                <!-- BUTTONS -->
+                <div class="d-grid gap-2 mt-2">
+                    <a href="/buyer/product/{{ p[0] }}"
+                       class="btn btn-outline-primary btn-sm w-100">
+                        View Details
+                    </a>
+
+                    <a href="/buyer/add-to-cart/{{ p[0] }}"
+                       class="btn btn-success btn-sm w-100">
+                        Add to Cart
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+</div>
+
+{% endblock %}

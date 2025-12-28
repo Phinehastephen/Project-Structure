@@ -1,0 +1,87 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<h2 class="mb-4">Admin Dashboard</h2>
+
+<div class="row">
+
+    <div class="col-md-4 mb-3">
+        <div class="dashboard-card text-center p-4 shadow-sm rounded">
+            <h3>{{ total_buyers }}</h3>
+            <p>Total Buyers</p>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <div class="dashboard-card text-center p-4 shadow-sm rounded">
+            <h3>{{ total_sellers }}</h3>
+            <p>Total Sellers</p>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <div class="dashboard-card text-center p-4 shadow-sm rounded">
+            <h3>{{ total_orders }}</h3>
+            <p>Total Orders</p>
+        </div>
+    </div>
+
+</div>
+
+
+<!-- ====================== CHARTS ====================== -->
+
+<h3 class="mt-5">Monthly New Users</h3>
+<canvas id="usersChart" style="max-height: 300px;"></canvas>
+
+<h3 class="mt-5">Monthly Orders</h3>
+<canvas id="ordersChart" style="max-height: 300px;"></canvas>
+
+
+<!-- ====================== SCRIPTS ====================== -->
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+// ---- USERS CHART ----
+fetch("/admin/user-stats")
+    .then(res => res.json())
+    .then(data => {
+        new Chart(document.getElementById("usersChart"), {
+            type: "bar",
+            data: {
+                labels: data.months.map(m => "Month " + m),
+                datasets: [{
+                    label: "New Users",
+                    data: data.counts,
+                    backgroundColor: "rgba(54, 162, 235, 0.5)",
+                    borderColor: "rgb(54, 162, 235)",
+                    borderWidth: 1
+                }]
+            }
+        });
+    });
+
+
+// ---- ORDERS CHART ----
+fetch("/admin/order-stats")
+    .then(res => res.json())
+    .then(data => {
+        new Chart(document.getElementById("ordersChart"), {
+            type: "line",
+            data: {
+                labels: data.months.map(m => "Month " + m),
+                datasets: [{
+                    label: "Orders",
+                    data: data.counts,
+                    borderColor: "rgb(255, 99, 132)",
+                    borderWidth: 2,
+                    fill: false,
+                    tension: 0.3
+                }]
+            }
+        });
+    });
+</script>
+
+{% endblock %}

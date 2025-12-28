@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+{% block content %}
+<h2>Edit Product</h2>
+
+<form method="POST" class="card p-4">
+
+    <label>Name</label>
+    <input type="text" name="name" value="{{ product[2] }}" class="form-control mb-3" required>
+
+    <label>Description</label>
+    <textarea name="description" class="form-control mb-3">{{ product[3] }}</textarea>
+
+    <label>Price</label>
+    <input type="number" name="price" value="{{ product[4] }}" class="form-control mb-3" required>
+
+    <label>Stock</label>
+    <input type="number" name="stock" value="{{ product[5] }}" class="form-control mb-3" required>
+
+    <button class="btn btn-primary w-100">Update Product</button>
+</form>
+
+{% endblock %}

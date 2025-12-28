@@ -1,0 +1,72 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<h2>Your Cart</h2>
+
+<!-- EMPTY CART MESSAGE -->
+{% if cart_items|length == 0 %}
+    <div class="alert alert-warning text-center mt-4">
+        Your cart is empty. Add products to continue.
+    </div>
+{% endif %}
+
+{% if cart_items|length > 0 %}
+<table class="table table-bordered mt-3 align-middle">
+    <tr class="table-dark">
+        <th>Product</th>
+        <th>Price (₦)</th>
+        <th>Quantity</th>
+        <th>Subtotal</th>
+        <th>Action</th>
+    </tr>
+
+    {% for item in cart_items %}
+    <tr>
+        <!-- PRODUCT NAME + OPTIONAL IMAGE -->
+        <td>
+            <div class="d-flex align-items-center">
+                
+                <!-- PRODUCT IMAGE -->
+                <img src="{{ url_for('static', filename='uploads/' ~ (item[4] if item[4] else 'placeholder.png')) }}"
+     width="120" height="120" style="object-fit:cover;">
+
+                
+                <strong>{{ item[1] }}</strong>
+            </div>
+        </td>
+
+        <!-- PRICE -->
+        <td>₦{{ item[2] }}</td>
+
+        <!-- QUANTITY UPDATE -->
+        <td style="width: 150px;">
+            <form action="/buyer/cart/update/{{ item[0] }}" method="POST" class="d-flex">
+                <input type="number" name="quantity" value="{{ item[3] }}" min="1" 
+                       class="form-control form-control-sm" style="width: 70px;">
+                <button class="btn btn-sm btn-success ms-2">✔</button>
+            </form>
+        </td>
+
+        <!-- SUBTOTAL -->
+        <td><strong>₦{{ item[2] * item[3] }}</strong></td>
+
+        <!-- DELETE BUTTON -->
+        <td>
+            <a href="/buyer/cart/delete/{{ item[0] }}" 
+               class="btn btn-sm btn-danger">
+                Remove
+            </a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+<!-- TOTAL + CHECKOUT -->
+<div class="text-end">
+    <h3>Total: ₦{{ total }}</h3>
+    <a href="/buyer/checkout" class="btn btn-dark btn-lg mt-3">Proceed to Checkout</a>
+</div>
+
+{% endif %}
+
+{% endblock %}

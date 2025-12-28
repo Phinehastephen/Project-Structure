@@ -1,0 +1,55 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<h2 class="mb-4">All Products</h2>
+
+<table class="table table-bordered mt-3 align-middle">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Product</th>
+            <th>Price (₦)</th>
+            <th>Stock</th>
+            <th>Seller</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+
+    <tbody>
+    {% for p in products %}
+        <tr>
+            <td>{{ p[0] }}</td>
+
+            <!-- PRODUCT NAME + IMAGE -->
+            <td>
+                <div class="d-flex align-items-center">
+                    {% if p|length > 5 and p[5] %}
+                        <img src="{{ url_for('static', filename='uploads/' ~ p[5]) }}" 
+                             width="50" height="50" class="me-2 rounded">
+                    {% else %}
+                        <img src="{{ url_for('static', filename='uploads/placeholder.png') }}"
+                             width="50" height="50" class="me-2 rounded">
+                    {% endif %}
+                    <span>{{ p[1] }}</span>
+                </div>
+            </td>
+
+            <td>₦{{ p[2] }}</td>
+            <td>{{ p[3] }}</td>
+            <td>{{ p[4] }}</td>
+
+            <td>
+                <!-- SAFER DELETE METHOD -->
+                <form action="/admin/delete-product/{{ p[0] }}" method="POST">
+                    <button class="btn btn-danger btn-sm"
+                            onclick="return confirm('Delete this product?');">
+                        Delete
+                    </button>
+                </form>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

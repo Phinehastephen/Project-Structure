@@ -1,0 +1,99 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<h2 class="mb-4">All Orders</h2>
+
+<table class="table table-bordered mt-3">
+    <thead>
+        <tr>
+            <th>Order ID</th>
+            <th>Buyer Name</th>
+            <th>Total (₦)</th>
+            <th>Status</th>
+            <th>Est. Delivery</th>
+            <th>Date</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+
+    <tbody>
+    {% for o in orders %}
+        <tr>
+            <!-- ORDER ID -->
+            <td>{{ o[0] }}</td>
+
+            <!-- BUYER NAME -->
+            <td>{{ o[1] }}</td>
+
+            <!-- TOTAL AMOUNT -->
+            <td>₦{{ o[2] }}</td>
+
+            <!-- STATUS BADGE -->
+            <td>
+                {% set color_map = {
+                    'pending': 'warning',
+                    'approved': 'primary',
+                    'shipped': 'info',
+                    'delivered': 'success',
+                    'cancelled': 'danger'
+                } %}
+
+                <span class="badge bg-{{ color_map[o[3]] }}">
+                    {{ o[3] | capitalize }}
+                </span>
+            </td>
+
+            <!-- ESTIMATED DELIVERY -->
+            <td>
+                {% if o[5] %}
+                    {{ o[5] }}
+                {% else %}
+                    <span class="text-muted">—</span>
+                {% endif %}
+            </td>
+
+            <!-- DATE -->
+            <td>{{ o[4] }}</td>
+
+            <!-- ACTIONS -->
+            <td>
+
+                <!-- UPDATE STATUS FORM -->
+                <form method="POST" action="/admin/orders/update/{{ o[0] }}" class="d-inline">
+
+                    <select name="status" class="form-select form-select-sm d-inline w-auto">
+                        <option value="pending"   {% if o[3]=="pending" %}selected{% endif %}>Pending</option>
+                        <option value="approved"  {% if o[3]=="approved" %}selected{% endif %}>Approved</option>
+                        <option value="shipped"   {% if o[3]=="shipped" %}selected{% endif %}>Shipped</option>
+                        <option value="delivered" {% if o[3]=="delivered" %}selected{% endif %}>Delivered</option>
+                        <option value="cancelled" {% if o[3]=="cancelled" %}selected{% endif %}>Cancelled</option>
+                    </select>
+
+                    <!-- ESTIMATED DELIVERY INPUT -->
+                    <input type="text"
+                           name="estimated_delivery"
+                           placeholder="e.g. 2–4 days"
+                           value="{{ o[5] }}"
+                           class="form-control form-control-sm d-inline w-auto mt-1">
+
+                    <button class="btn btn-sm btn-primary mt-1">Update</button>
+                </form>
+
+                <!-- VIEW ORDER -->
+                <a href="/admin/orders/view/{{ o[0] }}" class="btn btn-info btn-sm mt-1">View</a>
+
+                <!-- DELETE ORDER -->
+                <form method="POST" 
+                      action="/admin/orders/delete/{{ o[0] }}" 
+                      class="d-inline"
+                      onsubmit="return confirm('Are you sure you want to delete this order?');">
+                    <button class="btn btn-sm btn-danger mt-1">Delete</button>
+                </form>
+
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

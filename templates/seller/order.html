@@ -1,0 +1,76 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<h2>Order #{{ order[0] }}</h2>
+
+<div class="card p-3 mb-4">
+    <p><strong>Buyer ID:</strong> {{ order[1] }}</p>
+    <p><strong>Total Amount:</strong> ₦{{ order[2] }}</p>
+    <p><strong>Status:</strong> 
+        {% if order[3] == "pending" %}
+            <span class="badge bg-warning text-dark">Pending</span>
+        {% elif order[3] == "approved" %}
+            <span class="badge bg-primary">Approved</span>
+        {% elif order[3] == "shipped" %}
+            <span class="badge bg-info text-dark">Shipped</span>
+        {% elif order[3] == "delivered" %}
+            <span class="badge bg-success">Delivered</span>
+        {% elif order[3] == "cancelled" %}
+            <span class="badge bg-danger">Cancelled</span>
+        {% endif %}
+    </p>
+    <p><strong>Shipping Address:</strong> {{ order[4] }}</p>
+    <p><strong>Date:</strong> {{ order[5] }}</p>
+</div>
+
+<h4>Items in this Order</h4>
+
+<table class="table table-bordered">
+    <tr>
+        <th>Product</th>
+        <th>Price (₦)</th>
+        <th>Qty</th>
+        <th>Total (₦)</th>
+    </tr>
+
+    {% for item in items %}
+    <tr>
+        <td>{{ item[0] }}</td>   <!-- product name -->
+        <td>{{ item[1] }}</td>   <!-- price -->
+        <td>{{ item[2] }}</td>   <!-- qty -->
+        <td>{{ item[1] * item[2] }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<h4>Actions</h4>
+
+{% if order[3] == "pending" %}
+<form method="POST" action="/seller/orders/approve/{{ order[0] }}">
+    <button class="btn btn-warning">Approve Order</button>
+</form>
+
+{% elif order[3] == "approved" %}
+<form method="POST" action="/seller/orders/shipped/{{ order[0] }}">
+    <button class="btn btn-primary">Mark as Shipped</button>
+</form>
+
+{% elif order[3] == "shipped" %}
+<form method="POST" action="/seller/orders/delivered/{{ order[0] }}">
+    <button class="btn btn-success">Mark as Delivered</button>
+</form>
+
+{% elif order[3] == "delivered" %}
+<p class="text-success fw-bold">This order is fully completed.</p>
+
+{% elif order[3] == "cancelled" %}
+<p class="text-danger fw-bold">This order was cancelled.</p>
+{% endif %}
+
+{% if order[3] not in ["delivered", "cancelled"] %}
+<form method="POST" action="/seller/orders/cancel/{{ order[0] }}" class="mt-2">
+    <button class="btn btn-danger">Cancel Order</button>
+</form>
+{% endif %}
+
+{% endblock %}

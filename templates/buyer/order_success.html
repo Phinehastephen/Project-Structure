@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<div class="card p-4 mt-4 text-center">
+    <h2>Order Placed Successfully!</h2>
+    <p>Your order ID: <strong>{{ order_id }}</strong></p>
+
+    <a class="btn btn-primary mt-3" href="/buyer/orders">View Order History</a>
+    <a class="btn btn-secondary mt-3" href="/buyer/products">Continue Shopping</a>
+</div>
+
+{% endblock %}

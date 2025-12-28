@@ -1,0 +1,77 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<h2 class="mb-4">All Users</h2>
+
+<table class="table table-bordered mt-3">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Fullname</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Approval</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+
+    <tbody>
+    {% for u in users %}
+        <tr>
+            <td>{{ u[0] }}</td>
+            <td>{{ u[1] }}</td>
+            <td>{{ u[2] }}</td>
+            <td>{{ u[3] }}</td>
+
+            <!-- ACTIVE / SUSPENDED STATUS -->
+            <td>
+                {% if u[4] == 1 %}
+                    <span class="badge bg-success">Active</span>
+                {% else %}
+                    <span class="badge bg-danger">Suspended</span>
+                {% endif %}
+            </td>
+
+            <!-- SELLER APPROVAL STATUS -->
+            <td>
+                {% if u[3] == "seller" %}
+                    {% if u[5] == 1 %}
+                        <span class="badge bg-info">Approved</span>
+                    {% else %}
+                        <span class="badge bg-warning">Pending</span>
+                    {% endif %}
+                {% else %}
+                    ---
+                {% endif %}
+            </td>
+
+            <!-- ACTION BUTTONS -->
+            <td>
+
+                <!-- APPROVE SELLER -->
+                {% if u[3] == "seller" and u[5] == 0 %}
+                <form method="POST" action="/admin/approve-seller/{{ u[0] }}" class="d-inline">
+                    <button class="btn btn-primary btn-sm">Approve</button>
+                </form>
+                {% endif %}
+
+                <!-- SUSPEND / ACTIVATE USER -->
+                {% if u[4] == 1 %}
+                <form method="POST" action="/admin/suspend/{{ u[0] }}" class="d-inline">
+                    <button class="btn btn-warning btn-sm">Suspend</button>
+                </form>
+                {% else %}
+                <form method="POST" action="/admin/activate/{{ u[0] }}" class="d-inline">
+                    <button class="btn btn-success btn-sm">Activate</button>
+                </form>
+                {% endif %}
+
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+
+</table>
+
+{% endblock %}
