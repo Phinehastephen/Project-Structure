@@ -1,10 +1,13 @@
+import os
+
 class Config:
-    MYSQL_HOST = "localhost"
-    MYSQL_USER = "Stephen"
-    MYSQL_PASSWORD = "M@rtyr18"
-    MYSQL_DB = "users"
-    MYSQL_PORT = 3306
-    SECRET_KEY = "yoursecretkey123"
+    SECRET_KEY = os.getenv("SECRET_KEY", "defaultsecretkey123")
+
+    MYSQL_HOST = os.getenv("MYSQL_ADDON_HOST")
+    MYSQL_USER = os.getenv("MYSQL_ADDON_USER")
+    MYSQL_PASSWORD = os.getenv("MYSQL_ADDON_PASSWORD")
+    MYSQL_DB = os.getenv("MYSQL_ADDON_DB")
+    MYSQL_PORT = int(os.getenv("MYSQL_ADDON_PORT", 3306))
 
     UPLOAD_FOLDER = "static/uploads"
     ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
