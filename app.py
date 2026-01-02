@@ -36,7 +36,7 @@ def create_app():
     # ROOT REDIRECT (STEP 1)
     @app.route("/")
     def index():
-        return redirect(url_for("auth.login"))  # Redirect to login page
+        return redirect(url_for("auth.login"))
 
     # DISABLE CACHING
     @app.after_request
@@ -51,6 +51,17 @@ def create_app():
 
 # Create WSGI app for Clever Cloud
 app = create_app()
+
+
+# TEST DATABASE CONNECTION
+@app.route("/test-db")
+def test_db():
+    try:
+        cur = mysql.connection.cursor()
+        cur.execute("SELECT 1")
+        return "MySQL connected successfully!"
+    except Exception as e:
+        return f"Database Error: {str(e)}"
 
 
 # Local development
