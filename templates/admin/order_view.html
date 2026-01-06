@@ -7,11 +7,30 @@
 <div class="card p-4 mb-4 shadow-sm">
     <p><strong>Buyer:</strong> {{ order[5] }} ({{ order[6] }})</p>
     <p><strong>Total Amount:</strong> ₦{{ order[1] }}</p>
+
     <p><strong>Status:</strong> 
-        <span class="badge bg-primary">{{ order[2] | capitalize }}</span>
+        <span class="badge 
+            {% if order[2]=='pending' %}bg-warning text-dark
+            {% elif order[2]=='approved' %}bg-primary
+            {% elif order[2]=='shipped' %}bg-info text-dark
+            {% elif order[2]=='delivered' %}bg-success
+            {% elif order[2]=='cancelled' %}bg-danger
+            {% endif %}
+        ">
+            {{ order[2] | capitalize }}
+        </span>
     </p>
+
     <p><strong>Shipping Address:</strong> {{ order[3] }}</p>
     <p><strong>Order Date:</strong> {{ order[4] }}</p>
+
+    <p><strong>Estimated Delivery:</strong>
+        {% if order[7] %}
+            {{ order[7] }}
+        {% else %}
+            Not set yet
+        {% endif %}
+    </p>
 </div>
 
 
@@ -26,12 +45,7 @@
     "delivered": "success"
 } %}
 
-
-{% if order[2] not in steps %}
-    {% set current_status = "pending" %}
-{% else %}
-    {% set current_status = order[2] %}
-{% endif %}
+{% set current_status = order[2] if order[2] in steps else "pending" %}
 
 <div class="timeline-container mb-5">
     <div class="timeline-steps d-flex justify-content-between position-relative">
@@ -48,12 +62,10 @@
                     {{ s|capitalize }}
                 </p>
             </div>
-
         {% endfor %}
 
     </div>
 </div>
-
 
 <style>
 .timeline-container {
@@ -104,7 +116,8 @@
 <!-- ====================== UPDATE STATUS FORM ===================== -->
 <h4>Update Status</h4>
 
-<form method="POST" action="/admin/orders/update/{{ order[0] }}" class="d-flex gap-3">
+<form method="POST" action="/admin/orders/update/{{ order[0] }}" class="d-flex flex-wrap gap-3">
+
     <select name="status" class="form-control w-25">
         <option value="pending"   {% if order[2] == "pending" %}selected{% endif %}>Pending</option>
         <option value="approved"  {% if order[2] == "approved" %}selected{% endif %}>Approved</option>
@@ -112,6 +125,9 @@
         <option value="delivered" {% if order[2] == "delivered" %}selected{% endif %}>Delivered</option>
         <option value="cancelled" {% if order[2] == "cancelled" %}selected{% endif %}>Cancelled</option>
     </select>
+
+    <input type="date" name="estimated_delivery" class="form-control w-25"
+           value="{{ order[7] if order[7] }}">
 
     <button class="btn btn-primary">Update</button>
 </form>

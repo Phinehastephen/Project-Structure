@@ -9,71 +9,89 @@
     </div>
 {% endif %}
 
-
 <table class="table table-bordered mt-3">
     <tr>
         <th>Order ID</th>
         <th>Buyer ID</th>
         <th>Total (₦)</th>
         <th>Status</th>
+        <th>Est. Delivery</th>
         <th>Date</th>
         <th>Action</th>
-        <!-- <th>View</th> -->
     </tr>
 
     {% for o in orders %}
     <tr>
-        <td>{{ o[0] }}</td>  <!-- order id -->
-        <td>{{ o[1] }}</td>  <!-- buyer id -->
-        <td>₦{{ o[2] }}</td> <!-- total amount -->
+        <!-- ORDER ID -->
+        <td>{{ o[0] }}</td>
+
+        <!-- BUYER ID -->
+        <td>{{ o[1] }}</td>
+
+        <!-- TOTAL -->
+        <td>₦{{ o[2] }}</td>
+
+        <!-- STATUS -->
         <td>
-            {% if o[3] == "pending" %}
-                <span class="badge bg-warning text-dark">Pending</span>
-            {% elif o[3] == "approved" %}
-                <span class="badge bg-primary">Approved</span>
-            {% elif o[3] == "shipped" %}
-                <span class="badge bg-info text-dark">Shipped</span>
-            {% elif o[3] == "delivered" %}
-                <span class="badge bg-success">Delivered</span>
-            {% elif o[3] == "cancelled" %}
-                <span class="badge bg-danger">Cancelled</span>
+            {% set color_map = {
+                'pending': 'warning',
+                'approved': 'primary',
+                'shipped': 'info',
+                'delivered': 'success',
+                'cancelled': 'danger'
+            } %}
+            <span class="badge bg-{{ color_map[o[3]] }}">
+                {{ o[3] | capitalize }}
+            </span>
+        </td>
+
+        <!-- ESTIMATED DELIVERY (correct: o[4]) -->
+        <td>
+            {% if o[4] %}
+                {{ o[4] }}
+            {% else %}
+                <span class="text-muted">—</span>
             {% endif %}
         </td>
-        <td>{{ o[4] }}</td>  <!-- created_at -->
+
+        <!-- CREATED AT (correct: o[6]) -->
+        <td>{{ o[6] }}</td>
 
         <td>
+            <!-- PENDING → APPROVE -->
             {% if o[3] == "pending" %}
                 <form method="POST" action="/seller/orders/approve/{{ o[0] }}" class="d-inline">
                     <button class="btn btn-warning btn-sm">Approve</button>
                 </form>
 
+            <!-- APPROVED → SHIPPED -->
             {% elif o[3] == "approved" %}
                 <form method="POST" action="/seller/orders/shipped/{{ o[0] }}" class="d-inline">
                     <button class="btn btn-primary btn-sm">Mark Shipped</button>
                 </form>
 
+            <!-- SHIPPED → DELIVERED -->
             {% elif o[3] == "shipped" %}
                 <form method="POST" action="/seller/orders/delivered/{{ o[0] }}" class="d-inline">
                     <button class="btn btn-success btn-sm">Mark Delivered</button>
                 </form>
 
+            <!-- DELIVERED -->
             {% elif o[3] == "delivered" %}
                 <span class="text-success fw-bold">Delivered</span>
 
+            <!-- CANCELLED -->
             {% elif o[3] == "cancelled" %}
                 <span class="text-danger fw-bold">Cancelled</span>
             {% endif %}
 
+            <!-- CANCEL BUTTON (only for active orders) -->
             {% if o[3] not in ["delivered", "cancelled"] %}
                 <form method="POST" action="/seller/orders/cancel/{{ o[0] }}" class="d-inline">
                     <button class="btn btn-danger btn-sm">Cancel</button>
                 </form>
             {% endif %}
         </td>
-
-        <!-- <td>
-            <a href="/seller/order/{{ o[0] }}" class="btn btn-info btn-sm">View</a>
-        </td> -->
     </tr>
     {% endfor %}
 </table>

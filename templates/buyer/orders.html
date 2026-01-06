@@ -24,17 +24,24 @@
         <!-- ORDER ID -->
         <td>{{ o[0] }}</td>
 
-        <!-- TOTAL -->
-        <td>₦{{ o[1] }}</td>
+        <!-- TOTAL (column 2) -->
+        <td>₦{{ o[2] }}</td>
 
-        <!-- STATUS BADGE -->
+        <!-- STATUS (column 3) -->
         <td>
-            <span class="badge badge-{{ o[2] }}">
-                {{ o[2] | capitalize }}
+            {% set color_map = {
+                'pending': 'warning',
+                'approved': 'primary',
+                'shipped': 'info',
+                'delivered': 'success',
+                'cancelled': 'danger'
+            } %}
+            <span class="badge bg-{{ color_map[o[3]] }}">
+                {{ o[3] | capitalize }}
             </span>
         </td>
 
-        <!-- ESTIMATED DELIVERY -->
+        <!-- ESTIMATED DELIVERY (column 4) -->
         <td>
             {% if o[4] %}
                 {{ o[4] }}
@@ -43,8 +50,8 @@
             {% endif %}
         </td>
 
-        <!-- DATE -->
-        <td>{{ o[3] }}</td>
+        <!-- CREATED DATE (column 6) -->
+        <td>{{ o[6] }}</td>
 
         <!-- TRACK BUTTON -->
         <td>

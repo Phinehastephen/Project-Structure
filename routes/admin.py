@@ -4,15 +4,15 @@ from flask import (
 )
 from models.db import mysql
 
-admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
+admin_bp = Blueprint("admin", url_prefix="/admin")
 
 
-# -------------------- SECURITY --------------------
+# SECURITY check
 def admin_only():
     return "role" in session and session["role"] == "admin"
 
 
-# -------------------- DASHBOARD --------------------
+# ADMIN DASHBOARD
 @admin_bp.route("/dashboard")
 def dashboard():
     if not admin_only():
@@ -39,32 +39,33 @@ def dashboard():
     )
 
 
-# -------------------- VIEW ALL ORDERS --------------------
+# VIEW ALL ORDERS
 @admin_bp.route("/orders")
 def orders():
     if not admin_only():
         return redirect("/auth/login")
 
     cur = mysql.connection.cursor()
+
     cur.execute("""
         SELECT 
-            o.id,
-            u.name,
-            o.total_amount,
-            o.order_status,
-            o.created_at,
-            o.estimated_delivery
+            o.id,                  -- 0 order id
+            u.name,                -- 1 buyer name
+            o.total,               -- 2 total amount
+            o.status,              -- 3 order status
+            o.created_at,          -- 4 date
+            o.estimated_delivery   -- 5 est. delivery
         FROM orders o
-        JOIN users u ON o.user_id = u.id
+        JOIN users u ON o.buyer_id = u.id
         ORDER BY o.id DESC
     """)
+
     all_orders = cur.fetchall()
     cur.close()
 
     return render_template("admin/orders.html", orders=all_orders)
 
-
-# -------------------- VIEW FULL ORDER DETAILS --------------------
+# VIEW ORDER DETAILS
 @admin_bp.route("/orders/view/<int:order_id>")
 def view_order(order_id):
     if not admin_only():
@@ -72,85 +73,91 @@ def view_order(order_id):
 
     cur = mysql.connection.cursor()
 
+    # FIXED field names to match database schema
     cur.execute("""
         SELECT 
             o.id,
-            o.total_amount,
-            o.order_status,
+            o.total,
+            o.status,
             o.address,
             o.created_at,
             u.name,
             u.email,
             o.estimated_delivery
         FROM orders o
-        JOIN users u ON o.user_id = u.id
+        JOIN users u ON o.buyer_id = u.id
         WHERE o.id = %s
     """, [order_id])
+
     order = cur.fetchone()
 
+    # Fetch ordered product items
     cur.execute("""
-        SELECT p.name, p.price, oi.quantity
+        SELECT p.name, oi.price, oi.quantity
         FROM order_items oi
         JOIN products p ON oi.product_id = p.id
         WHERE oi.order_id = %s
     """, [order_id])
-    items = cur.fetchall()
 
+    items = cur.fetchall()
     cur.close()
 
     return render_template("admin/order_view.html", order=order, items=items)
 
 
-# -------------------- UPDATE ORDER STATUS --------------------
+# UPDATE ORDER STATUS
 @admin_bp.route("/orders/update/<int:order_id>", methods=["POST"])
 def admin_update_order(order_id):
     if not admin_only():
         return redirect("/auth/login")
 
     new_status = request.form.get("status")
-
-    
     estimate = request.form.get("estimated_delivery", None)
 
     cur = mysql.connection.cursor()
 
     if estimate:
         cur.execute("""
-            UPDATE orders 
-            SET order_status=%s, estimated_delivery=%s
+            UPDATE orders
+            SET status=%s, estimated_delivery=%s
             WHERE id=%s
         """, (new_status, estimate, order_id))
     else:
         cur.execute("""
-            UPDATE orders 
-            SET order_status=%s
+            UPDATE orders
+            SET status=%s
             WHERE id=%s
         """, (new_status, order_id))
 
     mysql.connection.commit()
     cur.close()
 
-    flash("Order status updated!")
+    flash("Order updated successfully!")
     return redirect("/admin/orders")
 
 
-# -------------------- DELETE ORDER --------------------
+# DELETE ORDER
 @admin_bp.route("/orders/delete/<int:order_id>", methods=["POST"])
 def delete_order(order_id):
     if not admin_only():
         return redirect("/auth/login")
 
     cur = mysql.connection.cursor()
+
+    # Delete order items first
     cur.execute("DELETE FROM order_items WHERE order_id=%s", [order_id])
+
+    # Then delete the order
     cur.execute("DELETE FROM orders WHERE id=%s", [order_id])
+
     mysql.connection.commit()
     cur.close()
 
-    flash("Order deleted!")
+    flash("Order removed successfully!")
     return redirect("/admin/orders")
 
 
-# -------------------- VIEW USERS --------------------
+# USERS LIST
 @admin_bp.route("/users")
 def users():
     if not admin_only():
@@ -167,7 +174,7 @@ def users():
     return render_template("admin/users.html", users=all_users)
 
 
-# -------------------- APPROVE SELLER ONLY --------------------
+# APPROVE SELLER
 @admin_bp.route("/approve-seller/<int:user_id>", methods=["POST"])
 def approve_seller(user_id):
     if not admin_only():
@@ -178,11 +185,11 @@ def approve_seller(user_id):
     mysql.connection.commit()
     cur.close()
 
-    flash("Seller approved successfully!")
+    flash("Seller approved!")
     return redirect("/admin/users")
 
 
-# -------------------- ACTIVATE USER --------------------
+# ACTIVATE USER
 @admin_bp.route("/activate/<int:user_id>", methods=["POST"])
 def activate_user(user_id):
     if not admin_only():
@@ -197,7 +204,7 @@ def activate_user(user_id):
     return redirect("/admin/users")
 
 
-# -------------------- SUSPEND USER --------------------
+# SUSPEND USER
 @admin_bp.route("/suspend/<int:user_id>", methods=["POST"])
 def suspend_user(user_id):
     if not admin_only():
@@ -212,7 +219,7 @@ def suspend_user(user_id):
     return redirect("/admin/users")
 
 
-# -------------------- VIEW PRODUCTS --------------------
+# PRODUCTS LIST
 @admin_bp.route("/products")
 def products():
     if not admin_only():
@@ -230,7 +237,7 @@ def products():
     return render_template("admin/products.html", products=items)
 
 
-# -------------------- DELETE PRODUCT --------------------
+# DELETE PRODUCT
 @admin_bp.route("/products/delete/<int:product_id>")
 def delete_product(product_id):
     if not admin_only():

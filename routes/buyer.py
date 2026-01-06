@@ -10,7 +10,7 @@ buyer_bp = Blueprint('buyer', __name__, url_prefix="/buyer")
 def dashboard():
     if 'role' not in session or session['role'] != "buyer":
         return redirect("/auth/login")
-    return render_template("buyer/dashboard.html")  
+    return render_template("buyer/dashboard.html")
 
 
 # -------------------- VIEW PRODUCTS --------------------
@@ -78,8 +78,8 @@ def add_to_cart(product_id):
     existing = cur.fetchone()
 
     if existing:
-        new_qty = existing[1] + 1
-        cur.execute("UPDATE cart SET quantity=%s WHERE id=%s", (new_qty, existing[0]))
+        cur.execute("UPDATE cart SET quantity=%s WHERE id=%s",
+                    (existing[1] + 1, existing[0]))
     else:
         cur.execute("""
             INSERT INTO cart (user_id, product_id, quantity)
@@ -158,6 +158,7 @@ def checkout():
 
         cur = mysql.connection.cursor()
 
+        # Load cart
         cur.execute("""
             SELECT cart.id, cart.product_id, products.price, cart.quantity 
             FROM cart 
@@ -172,29 +173,34 @@ def checkout():
 
         total = sum(item[2] * item[3] for item in cart_items)
 
-        # Place order
+        # Insert into orders (FIXED column names)
         cur.execute("""
-            INSERT INTO orders (user_id, total_amount, order_status, address)
+            INSERT INTO orders (buyer_id, total, status, address)
             VALUES (%s, %s, %s, %s)
         """, (user_id, total, "pending", address))
         order_id = cur.lastrowid
 
-        # Order items + notifications
+        # Insert order items
         for item in cart_items:
             cur.execute("""
                 INSERT INTO order_items (order_id, product_id, quantity, price)
                 VALUES (%s, %s, %s, %s)
             """, (order_id, item[1], item[3], item[2]))
 
+            # Notify seller
             cur.execute("SELECT seller_id FROM products WHERE id=%s", [item[1]])
             seller_id = cur.fetchone()[0]
 
             add_notification(
                 seller_id,
-                f"You received a new order (Order #{order_id}) for one of your products."
+                f"You received a new order (Order #{order_id})."
             )
 
-        add_notification(1, f"A new order (Order #{order_id}) has been placed.")
+        # Notify admin
+        add_notification(
+            1,
+            f"A new order (Order #{order_id}) has been placed."
+        )
 
         # Clear cart
         cur.execute("DELETE FROM cart WHERE user_id=%s", [user_id])
@@ -213,7 +219,7 @@ def order_success(order_id):
     return render_template("buyer/order_success.html", order_id=order_id)
 
 
-# -------------------- VIEW ORDERS --------------------
+# -------------------- VIEW ALL ORDERS --------------------
 @buyer_bp.route("/orders")
 def orders():
     if 'role' not in session or session['role'] != "buyer":
@@ -222,21 +228,25 @@ def orders():
     user_id = session['user_id']
     cur = mysql.connection.cursor()
 
-    # FULL INFO now includes estimated_delivery
     cur.execute("""
-        SELECT id, total_amount, order_status, address, created_at, estimated_delivery
+        SELECT 
+            id,          -- 0
+            total,       -- 1
+            status,      -- 2
+            created_at,  -- 3
+            estimated_delivery  -- 4
         FROM orders
-        WHERE user_id = %s
+        WHERE buyer_id = %s
         ORDER BY id DESC
     """, [user_id])
 
-    order_list = cur.fetchall()
+    orders = cur.fetchall()
     cur.close()
 
-    return render_template("buyer/orders.html", orders=order_list)
+    return render_template("buyer/orders.html", orders=orders)
 
 
-# -------------------- VIEW SINGLE ORDER / TRACKING --------------------
+# -------------------- VIEW SINGLE ORDER --------------------
 @buyer_bp.route("/order/<int:order_id>")
 def view_single_order(order_id):
     if 'role' not in session or session['role'] != "buyer":
@@ -245,15 +255,14 @@ def view_single_order(order_id):
     user_id = session['user_id']
     cur = mysql.connection.cursor()
 
-    # Get order main data with estimated_delivery
+    # FIXED column names
     cur.execute("""
-        SELECT id, total_amount, order_status, address, created_at, estimated_delivery
+        SELECT id, total, status, address, created_at, estimated_delivery
         FROM orders
-        WHERE id=%s AND user_id=%s
+        WHERE id=%s AND buyer_id=%s
     """, (order_id, user_id))
     order = cur.fetchone()
 
-    # Load items
     cur.execute("""
         SELECT products.name, order_items.price, order_items.quantity
         FROM order_items
@@ -276,10 +285,10 @@ def cancel_order(order_id):
     user_id = session['user_id']
     cur = mysql.connection.cursor()
 
-    # Verify order belongs to the buyer and is still pending
+    # Check ownership and status
     cur.execute("""
-        SELECT order_status FROM orders 
-        WHERE id=%s AND user_id=%s
+        SELECT status FROM orders
+        WHERE id=%s AND buyer_id=%s
     """, (order_id, user_id))
     result = cur.fetchone()
 
@@ -287,21 +296,19 @@ def cancel_order(order_id):
         flash("Order not found!")
         return redirect("/buyer/orders")
 
-    status = result[0]
-
-    if status != "pending":
-        flash("You can only cancel pending orders.")
+    if result[0] != "pending":
+        flash("Only pending orders can be cancelled.")
         return redirect(f"/buyer/order/{order_id}")
 
-    # Cancel the order
+    # Update status
     cur.execute("""
         UPDATE orders 
-        SET order_status='cancelled' 
+        SET status='cancelled'
         WHERE id=%s
     """, [order_id])
 
     mysql.connection.commit()
     cur.close()
 
-    flash("Order cancelled successfully.")
+    flash("Order cancelled!")
     return redirect("/buyer/orders")

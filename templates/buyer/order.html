@@ -24,6 +24,7 @@
     <p><strong>Date:</strong> {{ order[4] }}</p>
 </div>
 
+
 <!-- STATUS PROGRESS BAR -->
 <h4>Order Progress</h4>
 
@@ -49,6 +50,7 @@
     </div>
 </div>
 
+
 <h4>Items in this Order</h4>
 
 <table class="table table-bordered">
@@ -61,9 +63,9 @@
 
     {% for item in items %}
     <tr>
-        <td>{{ item[0] }}</td>   <!-- product name -->
-        <td>{{ item[1] }}</td>   <!-- price -->
-        <td>{{ item[2] }}</td>   <!-- qty -->
+        <td>{{ item[0] }}</td>
+        <td>{{ item[1] }}</td>
+        <td>{{ item[2] }}</td>
         <td>{{ item[1] * item[2] }}</td>
     </tr>
     {% endfor %}
@@ -79,7 +81,7 @@
 </p>
 
 
-<!-- CANCEL ORDER (Only if pending) -->
+<!-- CANCEL ORDER -->
 {% if order[2] == "pending" %}
 <form method="POST" action="/buyer/order/cancel/{{ order[0] }}">
     <button class="btn btn-danger mt-3"
