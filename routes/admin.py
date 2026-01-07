@@ -3,6 +3,7 @@ from flask import (
     redirect, session, flash
 )
 from models.db import mysql
+from models.schema import *
 
 admin_bp = Blueprint("admin", url_prefix="/admin")
 
@@ -47,24 +48,23 @@ def orders():
 
     cur = mysql.connection.cursor()
 
-    cur.execute("""
-        SELECT 
-            o.id,                  -- 0 order id
-            u.name,                -- 1 buyer name
-            o.total,               -- 2 total amount
-            o.status,              -- 3 order status
-            o.created_at,          -- 4 date
-            o.estimated_delivery   -- 5 est. delivery
-        FROM orders o
-        JOIN users u ON o.buyer_id = u.id
-        ORDER BY o.id DESC
+    cur.execute(f"""
+        SELECT
+            o.{ORDER_ID},
+            u.{USER_NAME},
+            o.{ORDER_TOTAL},
+            o.{ORDER_STATUS},
+            o.{ORDER_CREATED_AT},
+            o.{ORDER_ESTIMATED_DELIVERY}
+        FROM {ORDERS} o
+        JOIN {USERS} u ON o.{ORDER_BUYER_ID} = u.{USER_ID}
+        ORDER BY o.{ORDER_ID} DESC
     """)
 
     all_orders = cur.fetchall()
     cur.close()
 
     return render_template("admin/orders.html", orders=all_orders)
-
 # VIEW ORDER DETAILS
 @admin_bp.route("/orders/view/<int:order_id>")
 def view_order(order_id):

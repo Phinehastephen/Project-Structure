@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, session, redirect, request, flash
 from models.db import mysql
-from models.notifications import add_notification  
+from models.notifications import add_notification 
+from models.schema import * 
 
 buyer_bp = Blueprint('buyer', __name__, url_prefix="/buyer")
 
@@ -228,16 +229,16 @@ def orders():
     user_id = session['user_id']
     cur = mysql.connection.cursor()
 
-    cur.execute("""
-        SELECT 
-            id,          -- 0
-            total,       -- 1
-            status,      -- 2
-            created_at,  -- 3
-            estimated_delivery  -- 4
-        FROM orders
-        WHERE buyer_id = %s
-        ORDER BY id DESC
+    cur.execute(f"""
+        SELECT
+            {ORDER_ID},
+            {ORDER_TOTAL},
+            {ORDER_STATUS},
+            {ORDER_CREATED_AT},
+            {ORDER_ESTIMATED_DELIVERY}
+        FROM {ORDERS}
+        WHERE {ORDER_BUYER_ID} = %s
+        ORDER BY {ORDER_ID} DESC
     """, [user_id])
 
     orders = cur.fetchall()
