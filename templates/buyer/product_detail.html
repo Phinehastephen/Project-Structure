@@ -14,9 +14,10 @@
     <p><strong>Stock:</strong> {{ product[3] }}</p>
     <p><strong>Description:</strong> {{ product[6] }}</p>
 
-    <a href="/buyer/add_to_cart/{{ product[0] }}" class="btn btn-primary">
-        Add to Cart
+    <a href="{{ url_for('buyer.add_to_cart', product_id=product[0]) }}"class="btn btn-primary">
+     Add to Cart
     </a>
+
 </div>
 
 {% endblock %}

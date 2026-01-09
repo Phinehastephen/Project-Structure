@@ -150,67 +150,83 @@ def checkout():
         return redirect("/auth/login")
 
     user_id = session['user_id']
+    cur = mysql.connection.cursor()
 
-    if request.method == "POST":
-        fullname = request.form["fullname"]
-        address = request.form["address"]
-        phone = request.form["phone"]
-
-        cur = mysql.connection.cursor()
-
-        # Load cart
+    # ---------------- GET: show checkout page ----------------
+    if request.method == "GET":
         cur.execute("""
-            SELECT cart.id, cart.product_id, products.price, cart.quantity 
-            FROM cart 
+            SELECT products.name, products.image, products.price, cart.quantity
+            FROM cart
             JOIN products ON cart.product_id = products.id
             WHERE cart.user_id = %s
         """, [user_id])
-        cart_items = cur.fetchall()
 
-        if not cart_items:
+        items = cur.fetchall()
+        cur.close()
+
+        if not items:
             flash("Your cart is empty!")
             return redirect("/buyer/cart")
 
-        total = sum(item[2] * item[3] for item in cart_items)
+        return render_template("buyer/checkout.html", items=items)
 
-        # Insert into orders (FIXED column names)
+    # ---------------- POST: place order ----------------
+    address = request.form["address"]
+
+    cur.execute("""
+        SELECT cart.product_id, products.price, cart.quantity
+        FROM cart
+        JOIN products ON cart.product_id = products.id
+        WHERE cart.user_id = %s
+    """, [user_id])
+
+    cart_items = cur.fetchall()
+
+    if not cart_items:
+        cur.close()
+        flash("Your cart is empty!")
+        return redirect("/buyer/cart")
+
+    total = sum(item[1] * item[2] for item in cart_items)
+
+    # Create order
+    cur.execute("""
+        INSERT INTO orders (buyer_id, total, status, address)
+        VALUES (%s, %s, %s, %s)
+    """, (user_id, total, "pending", address))
+    order_id = cur.lastrowid
+
+    # Insert order items + notify sellers
+    for item in cart_items:
+        product_id, price, qty = item
+
         cur.execute("""
-            INSERT INTO orders (buyer_id, total, status, address)
+            INSERT INTO order_items (order_id, product_id, quantity, price)
             VALUES (%s, %s, %s, %s)
-        """, (user_id, total, "pending", address))
-        order_id = cur.lastrowid
+        """, (order_id, product_id, qty, price))
 
-        # Insert order items
-        for item in cart_items:
-            cur.execute("""
-                INSERT INTO order_items (order_id, product_id, quantity, price)
-                VALUES (%s, %s, %s, %s)
-            """, (order_id, item[1], item[3], item[2]))
+        cur.execute("SELECT seller_id FROM products WHERE id=%s", [product_id])
+        seller = cur.fetchone()
 
-            # Notify seller
-            cur.execute("SELECT seller_id FROM products WHERE id=%s", [item[1]])
-            seller_id = cur.fetchone()[0]
-
+        if seller:
             add_notification(
-                seller_id,
+                seller[0],
                 f"You received a new order (Order #{order_id})."
             )
 
-        # Notify admin
-        add_notification(
-            1,
-            f"A new order (Order #{order_id}) has been placed."
-        )
+    # Notify admin (safe)
+    try:
+        add_notification(1, f"A new order (Order #{order_id}) has been placed.")
+    except:
+        pass
 
-        # Clear cart
-        cur.execute("DELETE FROM cart WHERE user_id=%s", [user_id])
+    # Clear cart
+    cur.execute("DELETE FROM cart WHERE user_id=%s", [user_id])
 
-        mysql.connection.commit()
-        cur.close()
+    mysql.connection.commit()
+    cur.close()
 
-        return redirect(f"/buyer/order-success/{order_id}")
-
-    return render_template("buyer/checkout.html")
+    return redirect(f"/buyer/order-success/{order_id}")
 
 
 # -------------------- ORDER SUCCESS --------------------

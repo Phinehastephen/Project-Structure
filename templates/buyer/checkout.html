@@ -1,8 +1,23 @@
 {% extends "layout.html" %}
-
 {% block content %}
 
 <h2>Checkout (Cash on Delivery)</h2>
+
+{% if items %}
+<div class="card mb-4 p-3">
+    {% for item in items %}
+    <div class="d-flex align-items-center mb-3">
+        <img src="{{ url_for('static', filename='uploads/' ~ item[1]) }}"
+             width="70" class="me-3 rounded">
+
+        <div>
+            <strong>{{ item[0] }}</strong><br>
+            ₦{{ item[2] }} × {{ item[3] }}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
 
 <form method="POST" class="card p-4">
 
