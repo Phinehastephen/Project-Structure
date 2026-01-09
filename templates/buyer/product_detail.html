@@ -1,21 +1,32 @@
 {% extends "layout.html" %}
 {% block content %}
 
-<div class="card p-4">
-    <h2>{{ product[2] }}</h2>
+<div class="card p-4 shadow-sm">
 
-    {% if product[5] %}
-        <img src="{{ url_for('static', filename='uploads/' ~ (product[6] if product[6] else 'placeholder.png')) }}"
-     class="img-fluid"
-     style="max-width:300px; object-fit:cover;">
-    {% endif %}
+    <!-- PRODUCT NAME -->
+    <h2 class="mb-3">{{ product[2] }}</h2>
 
-    <p><strong>Price:</strong> ₦{{ product[4] }}</p>
+    <!-- PRODUCT IMAGE -->
+    <div class="mb-3">
+        <img
+            src="{{ url_for('static', filename='uploads/' ~ (product[7] if product[7] else 'placeholder.png')) }}"
+            class="img-fluid rounded"
+            style="max-width:300px; object-fit:cover;"
+            alt="{{ product[2] }}"
+        >
+    </div>
+
+    <!-- PRODUCT DETAILS -->
+    <p><strong>Price:</strong> ₦{{ "%.2f"|format(product[4]) }}</p>
     <p><strong>Stock:</strong> {{ product[3] }}</p>
     <p><strong>Description:</strong> {{ product[6] }}</p>
 
-    <a href="{{ url_for('buyer.add_to_cart', product_id=product[0]) }}"class="btn btn-primary">
-     Add to Cart
+    <!-- ADD TO CART -->
+    <a
+        href="{{ url_for('buyer.add_to_cart', product_id=product[0]) }}"
+        class="btn btn-primary mt-3"
+    >
+        Add to Cart
     </a>
 
 </div>

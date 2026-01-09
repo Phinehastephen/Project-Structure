@@ -103,7 +103,7 @@ def cart():
     cur = mysql.connection.cursor()
 
     cur.execute("""
-        SELECT cart.id, products.name, products.price, cart.quantity, products.id
+        SELECT cart.id, products.name, products.price, cart.quantity, products.image
         FROM cart 
         JOIN products ON cart.product_id = products.id
         WHERE cart.user_id = %s
