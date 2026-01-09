@@ -3,7 +3,6 @@ from werkzeug.utils import secure_filename
 from models.db import mysql
 from models.notifications import add_notification
 import os
-from models.schema import *
 
 seller_bp = Blueprint('seller', __name__, url_prefix="/seller")
 
@@ -159,21 +158,22 @@ def seller_orders():
         return redirect("/auth/login")
 
     seller_id = session["user_id"]
+
     cur = mysql.connection.cursor()
 
-    cur.execute(f"""
-        SELECT
-            o.{ORDER_ID},
-            o.{ORDER_BUYER_ID},
-            o.{ORDER_TOTAL},
-            o.{ORDER_STATUS},
-            o.{ORDER_CREATED_AT}
-        FROM {ORDERS} o
-        JOIN {ORDER_ITEMS} oi ON o.id = oi.order_id
-        JOIN {PRODUCTS} p ON oi.product_id = p.id
+    cur.execute("""
+        SELECT 
+            o.id,
+            o.buyer_id,
+            o.total,
+            o.status,
+            o.created_at
+        FROM orders o
+        JOIN order_items oi ON o.id = oi.order_id
+        JOIN products p ON oi.product_id = p.id
         WHERE p.seller_id = %s
-        GROUP BY o.{ORDER_ID}
-        ORDER BY o.{ORDER_ID} DESC
+        GROUP BY o.id
+        ORDER BY o.id DESC
     """, [seller_id])
 
     orders = cur.fetchall()
@@ -188,13 +188,23 @@ def approve_order(order_id):
     if "role" not in session or session["role"] != "seller":
         return redirect("/auth/login")
 
+    seller_id = session["user_id"]
     cur = mysql.connection.cursor()
-    cur.execute("UPDATE orders SET status='approved' WHERE id=%s", [order_id])
+
+    cur.execute("""
+        UPDATE orders o
+        JOIN order_items oi ON o.id = oi.order_id
+        JOIN products p ON oi.product_id = p.id
+        SET o.status='approved'
+        WHERE o.id=%s AND p.seller_id=%s
+    """, (order_id, seller_id))
+
     mysql.connection.commit()
     cur.close()
 
     flash("Order approved!")
     return redirect("/seller/orders")
+
 
 
 @seller_bp.route("/orders/shipped/<int:order_id>", methods=["POST"])
