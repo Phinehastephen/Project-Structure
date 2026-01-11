@@ -11,7 +11,8 @@
             <th>Email</th>
             <th>Role</th>
             <th>Status</th>
-            <th>Approval</th>
+            <th>Seller Approval</th>
+            <th>Created At</th>
             <th>Actions</th>
         </tr>
     </thead>
@@ -24,7 +25,7 @@
             <td>{{ u[2] }}</td>
             <td>{{ u[3] }}</td>
 
-            <!-- ACTIVE / SUSPENDED STATUS -->
+            <!-- ACTIVE / SUSPENDED -->
             <td>
                 {% if u[4] == 1 %}
                     <span class="badge bg-success">Active</span>
@@ -33,7 +34,7 @@
                 {% endif %}
             </td>
 
-            <!-- SELLER APPROVAL STATUS -->
+            <!-- SELLER APPROVAL -->
             <td>
                 {% if u[3] == "seller" %}
                     {% if u[5] == 1 %}
@@ -42,21 +43,21 @@
                         <span class="badge bg-warning">Pending</span>
                     {% endif %}
                 {% else %}
-                    ---
+                    —
                 {% endif %}
             </td>
 
-            <!-- ACTION BUTTONS -->
-            <td>
+            <!-- CREATED AT -->
+            <td>{{ u[6] }}</td>
 
-                <!-- APPROVE SELLER -->
+            <!-- ACTIONS -->
+            <td>
                 {% if u[3] == "seller" and u[5] == 0 %}
                 <form method="POST" action="/admin/approve-seller/{{ u[0] }}" class="d-inline">
                     <button class="btn btn-primary btn-sm">Approve</button>
                 </form>
                 {% endif %}
 
-                <!-- SUSPEND / ACTIVATE USER -->
                 {% if u[4] == 1 %}
                 <form method="POST" action="/admin/suspend/{{ u[0] }}" class="d-inline">
                     <button class="btn btn-warning btn-sm">Suspend</button>
@@ -66,12 +67,10 @@
                     <button class="btn btn-success btn-sm">Activate</button>
                 </form>
                 {% endif %}
-
             </td>
         </tr>
     {% endfor %}
     </tbody>
-
 </table>
 
 {% endblock %}

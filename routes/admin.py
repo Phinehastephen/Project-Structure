@@ -36,6 +36,26 @@ def dashboard():
     )
 
 
+# -------------------- ADMIN USERS --------------------
+@admin_bp.route("/users")
+def users():
+    if not admin_only():
+        return redirect("/auth/login")
+
+    cur = mysql.connection.cursor()
+
+    cur.execute("""
+        SELECT id, name, email, role, active, seller_approved, created_at
+        FROM users
+        ORDER BY created_at DESC
+    """)
+
+    users = cur.fetchall()
+    cur.close()
+
+    return render_template("admin/users.html", users=users)
+
+
 # -------------------- VIEW ALL ORDERS --------------------
 @admin_bp.route("/orders")
 def orders():
@@ -50,8 +70,8 @@ def orders():
             u.name,
             o.total,
             o.status,
-            o.created_at,
-            o.estimated_delivery
+            o.estimated_delivery,
+            o.created_at
         FROM orders o
         JOIN users u ON o.buyer_id = u.id
         ORDER BY o.id DESC
@@ -74,12 +94,12 @@ def view_order(order_id):
     cur.execute("""
         SELECT
             o.id,
+            u.name,
+            u.email,
             o.total,
             o.status,
             o.address,
             o.created_at,
-            u.name,
-            u.email,
             o.estimated_delivery
         FROM orders o
         JOIN users u ON o.buyer_id = u.id
