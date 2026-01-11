@@ -83,12 +83,17 @@ def suspend_user(user_id):
     if not admin_only():
         return redirect("/auth/login")
 
+    # 🔐 Prevent admin from suspending self
+    if session.get("user_id") == user_id:
+        flash("You cannot suspend your own account.", "danger")
+        return redirect("/admin/users")
+
     cur = mysql.connection.cursor()
     cur.execute("UPDATE users SET active = 0 WHERE id = %s", (user_id,))
     mysql.connection.commit()
     cur.close()
 
-    flash("User suspended.", "warning")
+    flash("User suspended successfully.", "warning")
     return redirect("/admin/users")
 
 
@@ -98,13 +103,19 @@ def activate_user(user_id):
     if not admin_only():
         return redirect("/auth/login")
 
+    # 🔐 Prevent admin self-action
+    if session.get("user_id") == user_id:
+        flash("This action is not allowed on your own account.", "danger")
+        return redirect("/admin/users")
+
     cur = mysql.connection.cursor()
     cur.execute("UPDATE users SET active = 1 WHERE id = %s", (user_id,))
     mysql.connection.commit()
     cur.close()
 
-    flash("User activated.", "success")
+    flash("User activated successfully.", "success")
     return redirect("/admin/users")
+
 
 
 # -------------------- VIEW ALL ORDERS --------------------
