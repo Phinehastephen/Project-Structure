@@ -7,10 +7,10 @@
     <div class="alert alert-secondary text-center mt-4">
         You have no orders yet.
     </div>
-{% endif %}
+{% else %}
 
-<table class="table table-bordered mt-3">
-    <tr>
+<table class="table table-bordered mt-3 align-middle">
+    <tr class="table-dark">
         <th>Order ID</th>
         <th>Total (₦)</th>
         <th>Status</th>
@@ -19,29 +19,30 @@
         <th>Track</th>
     </tr>
 
+    {% set color_map = {
+        'pending': 'warning',
+        'approved': 'primary',
+        'shipped': 'info',
+        'delivered': 'success',
+        'cancelled': 'danger'
+    } %}
+
     {% for o in orders %}
     <tr>
         <!-- ORDER ID -->
-        <td>{{ o[0] }}</td>
+        <td>#{{ o[0] }}</td>
 
-        <!-- TOTAL (column 2) -->
-        <td>₦{{ o[2] }}</td>
+        <!-- TOTAL -->
+        <td>₦{{ o[1] }}</td>
 
-        <!-- STATUS (column 3) -->
+        <!-- STATUS -->
         <td>
-            {% set color_map = {
-                'pending': 'warning',
-                'approved': 'primary',
-                'shipped': 'info',
-                'delivered': 'success',
-                'cancelled': 'danger'
-            } %}
-            <span class="badge bg-{{ color_map[o[3]] }}">
-                {{ o[3] | capitalize }}
+            <span class="badge bg-{{ color_map.get(o[2], 'secondary') }}">
+                {{ o[2] | capitalize }}
             </span>
         </td>
 
-        <!-- ESTIMATED DELIVERY (column 4) -->
+        <!-- ESTIMATED DELIVERY -->
         <td>
             {% if o[4] %}
                 {{ o[4] }}
@@ -50,15 +51,19 @@
             {% endif %}
         </td>
 
-        <!-- CREATED DATE (column 6) -->
-        <td>{{ o[6] }}</td>
+        <!-- CREATED DATE -->
+        <td>{{ o[3] }}</td>
 
-        <!-- TRACK BUTTON -->
+        <!-- TRACK -->
         <td>
-            <a href="/buyer/order/{{ o[0] }}" class="btn btn-info btn-sm">Track</a>
+            <a href="/buyer/order/{{ o[0] }}" class="btn btn-info btn-sm">
+                Track
+            </a>
         </td>
     </tr>
     {% endfor %}
 </table>
+
+{% endif %}
 
 {% endblock %}

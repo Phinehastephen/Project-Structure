@@ -9,6 +9,33 @@ def admin_only():
     return "role" in session and session["role"] == "admin"
 
 
+# -------------------- ADMIN DASHBOARD --------------------
+@admin_bp.route("/dashboard")
+def dashboard():
+    if not admin_only():
+        return redirect("/auth/login")
+
+    cur = mysql.connection.cursor()
+
+    cur.execute("SELECT COUNT(*) FROM users WHERE role='buyer'")
+    total_buyers = cur.fetchone()[0]
+
+    cur.execute("SELECT COUNT(*) FROM users WHERE role='seller'")
+    total_sellers = cur.fetchone()[0]
+
+    cur.execute("SELECT COUNT(*) FROM orders")
+    total_orders = cur.fetchone()[0]
+
+    cur.close()
+
+    return render_template(
+        "admin/dashboard.html",
+        total_buyers=total_buyers,
+        total_sellers=total_sellers,
+        total_orders=total_orders
+    )
+
+
 # -------------------- VIEW ALL ORDERS --------------------
 @admin_bp.route("/orders")
 def orders():
@@ -71,7 +98,11 @@ def view_order(order_id):
     items = cur.fetchall()
     cur.close()
 
-    return render_template("admin/order_view.html", order=order, items=items)
+    return render_template(
+        "admin/order_view.html",
+        order=order,
+        items=items
+    )
 
 
 # -------------------- UPDATE ORDER --------------------
@@ -117,5 +148,5 @@ def delete_order(order_id):
     mysql.connection.commit()
     cur.close()
 
-    flash("Order deleted.")
+    flash("Order deleted successfully.")
     return redirect("/admin/orders")

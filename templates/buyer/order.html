@@ -7,23 +7,25 @@
     <p><strong>Total Amount:</strong> ₦{{ order[1] }}</p>
 
     <p><strong>Status:</strong>
-        {% if order[2] == "pending" %}
+        {% set status = order[2] %}
+        {% if status == "pending" %}
             <span class="badge bg-warning text-dark">Pending</span>
-        {% elif order[2] == "approved" %}
+        {% elif status == "approved" %}
             <span class="badge bg-primary">Approved</span>
-        {% elif order[2] == "shipped" %}
+        {% elif status == "shipped" %}
             <span class="badge bg-info text-dark">Shipped</span>
-        {% elif order[2] == "delivered" %}
+        {% elif status == "delivered" %}
             <span class="badge bg-success">Delivered</span>
-        {% elif order[2] == "cancelled" %}
+        {% elif status == "cancelled" %}
             <span class="badge bg-danger">Cancelled</span>
+        {% else %}
+            <span class="badge bg-secondary">Unknown</span>
         {% endif %}
     </p>
 
     <p><strong>Shipping Address:</strong> {{ order[3] }}</p>
-    <p><strong>Date:</strong> {{ order[4] }}</p>
+    <p><strong>Date:</strong> {{ order[4].strftime('%Y-%m-%d %H:%M') }}</p>
 </div>
-
 
 <!-- STATUS PROGRESS BAR -->
 <h4>Order Progress</h4>
@@ -36,20 +38,22 @@
     'cancelled': 0
 } %}
 
+{% set bar_width = progress.get(status, 0) %}
+
 <div class="progress mb-4" style="height: 30px;">
-    <div class="progress-bar 
-        {% if order[2] == 'cancelled' %}bg-danger
-        {% elif order[2] == 'pending' %}bg-warning text-dark
-        {% elif order[2] == 'approved' %}bg-primary
-        {% elif order[2] == 'shipped' %}bg-info text-dark
-        {% elif order[2] == 'delivered' %}bg-success
+    <div class="progress-bar
+        {% if status == 'cancelled' %}bg-danger
+        {% elif status == 'pending' %}bg-warning text-dark
+        {% elif status == 'approved' %}bg-primary
+        {% elif status == 'shipped' %}bg-info text-dark
+        {% elif status == 'delivered' %}bg-success
+        {% else %}bg-secondary
         {% endif %}"
         role="progressbar"
-        style="width: {{ progress[order[2]] }}%;">
-        {{ order[2] | capitalize }}
+        style="width: {{ bar_width }}%;">
+        {{ status | capitalize }}
     </div>
 </div>
-
 
 <h4>Items in this Order</h4>
 
@@ -71,18 +75,17 @@
     {% endfor %}
 </table>
 
-
-<p><strong>Estimated Delivery:</strong>
+<p>
+    <strong>Estimated Delivery:</strong>
     {% if order[5] %}
-        {{ order[5] }}
+        {{ order[5].strftime('%Y-%m-%d') }}
     {% else %}
-        Not set yet — order still processing
+        <span class="text-muted">Not set yet — order still processing</span>
     {% endif %}
 </p>
 
-
 <!-- CANCEL ORDER -->
-{% if order[2] == "pending" %}
+{% if status == "pending" %}
 <form method="POST" action="/buyer/order/cancel/{{ order[0] }}">
     <button class="btn btn-danger mt-3"
             onclick="return confirm('Are you sure you want to cancel this order?');">

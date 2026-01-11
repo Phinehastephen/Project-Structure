@@ -21,6 +21,15 @@
     </tr>
 
     {% for o in orders %}
+    {% set status = o[3] %}
+    {% set color_map = {
+        'pending': 'warning',
+        'approved': 'primary',
+        'shipped': 'info',
+        'delivered': 'success',
+        'cancelled': 'danger'
+    } %}
+
     <tr>
         <!-- ORDER ID -->
         <td>{{ o[0] }}</td>
@@ -33,60 +42,49 @@
 
         <!-- STATUS -->
         <td>
-            {% set color_map = {
-                'pending': 'warning',
-                'approved': 'primary',
-                'shipped': 'info',
-                'delivered': 'success',
-                'cancelled': 'danger'
-            } %}
-            <span class="badge bg-{{ color_map[o[3]] }}">
-                {{ o[3] | capitalize }}
+            <span class="badge bg-{{ color_map.get(status, 'secondary') }}">
+                {{ status | capitalize }}
             </span>
         </td>
 
-        <!-- ESTIMATED DELIVERY (correct: o[4]) -->
+        <!-- ESTIMATED DELIVERY -->
         <td>
             {% if o[4] %}
-                {{ o[4] }}
+                {{ o[4].strftime('%Y-%m-%d') }}
             {% else %}
                 <span class="text-muted">—</span>
             {% endif %}
         </td>
 
-        <!-- CREATED AT (correct: o[6]) -->
-        <td>{{ o[6] }}</td>
+        <!-- CREATED DATE -->
+        <td>{{ o[6].strftime('%Y-%m-%d %H:%M') }}</td>
 
+        <!-- ACTIONS -->
         <td>
-            <!-- PENDING → APPROVE -->
-            {% if o[3] == "pending" %}
+            {% if status == "pending" %}
                 <form method="POST" action="/seller/orders/approve/{{ o[0] }}" class="d-inline">
                     <button class="btn btn-warning btn-sm">Approve</button>
                 </form>
 
-            <!-- APPROVED → SHIPPED -->
-            {% elif o[3] == "approved" %}
+            {% elif status == "approved" %}
                 <form method="POST" action="/seller/orders/shipped/{{ o[0] }}" class="d-inline">
                     <button class="btn btn-primary btn-sm">Mark Shipped</button>
                 </form>
 
-            <!-- SHIPPED → DELIVERED -->
-            {% elif o[3] == "shipped" %}
+            {% elif status == "shipped" %}
                 <form method="POST" action="/seller/orders/delivered/{{ o[0] }}" class="d-inline">
                     <button class="btn btn-success btn-sm">Mark Delivered</button>
                 </form>
 
-            <!-- DELIVERED -->
-            {% elif o[3] == "delivered" %}
+            {% elif status == "delivered" %}
                 <span class="text-success fw-bold">Delivered</span>
 
-            <!-- CANCELLED -->
-            {% elif o[3] == "cancelled" %}
+            {% elif status == "cancelled" %}
                 <span class="text-danger fw-bold">Cancelled</span>
             {% endif %}
 
-            <!-- CANCEL BUTTON (only for active orders) -->
-            {% if o[3] not in ["delivered", "cancelled"] %}
+            <!-- CANCEL BUTTON -->
+            {% if status not in ["delivered", "cancelled"] %}
                 <form method="POST" action="/seller/orders/cancel/{{ o[0] }}" class="d-inline">
                     <button class="btn btn-danger btn-sm">Cancel</button>
                 </form>
