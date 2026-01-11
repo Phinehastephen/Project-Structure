@@ -45,7 +45,7 @@ def users():
     cur = mysql.connection.cursor()
 
     cur.execute("""
-        SELECT id, name, email, role, active, seller_approved, created_at
+        SELECT id, name, email, role, active, approved, created_at
         FROM users
         ORDER BY created_at DESC
     """)
@@ -54,6 +54,57 @@ def users():
     cur.close()
 
     return render_template("admin/users.html", users=users)
+
+
+# -------------------- APPROVE SELLER --------------------
+@admin_bp.route("/approve-seller/<int:user_id>", methods=["POST"])
+def approve_seller(user_id):
+    if not admin_only():
+        return redirect("/auth/login")
+
+    cur = mysql.connection.cursor()
+
+    cur.execute("""
+        UPDATE users
+        SET approved = 1
+        WHERE id = %s AND role = 'seller'
+    """, (user_id,))
+
+    mysql.connection.commit()
+    cur.close()
+
+    flash("Seller approved successfully.", "success")
+    return redirect("/admin/users")
+
+
+# -------------------- SUSPEND USER --------------------
+@admin_bp.route("/suspend/<int:user_id>", methods=["POST"])
+def suspend_user(user_id):
+    if not admin_only():
+        return redirect("/auth/login")
+
+    cur = mysql.connection.cursor()
+    cur.execute("UPDATE users SET active = 0 WHERE id = %s", (user_id,))
+    mysql.connection.commit()
+    cur.close()
+
+    flash("User suspended.", "warning")
+    return redirect("/admin/users")
+
+
+# -------------------- ACTIVATE USER --------------------
+@admin_bp.route("/activate/<int:user_id>", methods=["POST"])
+def activate_user(user_id):
+    if not admin_only():
+        return redirect("/auth/login")
+
+    cur = mysql.connection.cursor()
+    cur.execute("UPDATE users SET active = 1 WHERE id = %s", (user_id,))
+    mysql.connection.commit()
+    cur.close()
+
+    flash("User activated.", "success")
+    return redirect("/admin/users")
 
 
 # -------------------- VIEW ALL ORDERS --------------------
