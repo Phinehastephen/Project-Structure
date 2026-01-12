@@ -5,8 +5,8 @@
 
 <!-- ====================== ORDER SUMMARY CARD ===================== -->
 <div class="card p-4 mb-4 shadow-sm">
-    <p><strong>Buyer:</strong> {{ order[5] }} ({{ order[6] }})</p>
-    <p><strong>Total Amount:</strong> ₦{{ order[1] }}</p>
+    <p><strong>Buyer:</strong> {{ order[1] }}</p>
+    <p><strong>Total Amount:</strong> ₦{{ order[3] }}</p>
 
     <p><strong>Status:</strong> 
         <span class="badge 
@@ -17,12 +17,12 @@
             {% elif order[2]=='cancelled' %}bg-danger
             {% endif %}
         ">
-            {{ order[2] | capitalize }}
+            {{ order[4] | capitalize }}
         </span>
     </p>
 
-    <p><strong>Shipping Address:</strong> {{ order[3] }}</p>
-    <p><strong>Order Date:</strong> {{ order[4] }}</p>
+    <p><strong>Shipping Address:</strong> {{ order[5] }}</p>
+    <p><strong>Order Date:</strong> {{ order[6] }}</p>
 
     <p><strong>Estimated Delivery:</strong>
         {% if order[7] %}
@@ -32,63 +32,6 @@
         {% endif %}
     </p>
 </div>
-
-
-<!-- ====================== ORDER STATUS TIMELINE ===================== -->
-<h4 class="mb-3">Order Timeline</h4>
-
-{% set steps = ["pending", "approved", "shipped", "delivered"] %}
-{% set colors = {
-    "pending": "warning",
-    "approved": "primary",
-    "shipped": "info",
-    "delivered": "success"
-} %}
-
-{% set current_status = order[2] if order[2] in steps else "pending" %}
-
-<div class="timeline-container mb-5">
-    <div class="timeline-steps d-flex justify-content-between position-relative">
-
-        {% for s in steps %}
-            {% set done = steps.index(current_status) >= steps.index(s) %}
-
-            <div class="text-center" style="width: 25%;">
-                <div class="timeline-dot 
-                    {% if done %} bg-{{ colors[s] }} {% else %} bg-secondary {% endif %}">
-                </div>
-
-                <p class="mt-2 {% if done %} fw-bold {% endif %}">
-                    {{ s|capitalize }}
-                </p>
-            </div>
-        {% endfor %}
-
-    </div>
-</div>
-
-<style>
-.timeline-container {
-    padding: 10px 20px;
-}
-
-.timeline-steps::before {
-    content: "";
-    top: 22px;
-    left: 0;
-    width: 100%;
-    height: 4px;
-    position: absolute;
-    background: #ddd;
-}
-
-.timeline-dot {
-    width: 25px;
-    height: 25px;
-    margin: auto;
-    border-radius: 50%;
-}
-</style>
 
 
 <!-- ====================== ORDER ITEMS TABLE ===================== -->
